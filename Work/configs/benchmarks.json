@@ -1,0 +1,12 @@
+{
+  "gsm8k": {"repo":"openai/gsm8k","files":"^main/.*\\.parquet$","split":"test","required":["main/test"],"harness":["gsm8k"]},
+  "ifeval": {"repo":"google/IFEval","files":"\\.(parquet|jsonl)$","split":"train","harness":["ifeval"]},
+  "mmlu_pro": {"repo":"TIGER-Lab/MMLU-Pro","files":"\\.parquet$","split":"test","harness":["mmlu_pro"]},
+  "gpqa_diamond": {"repo":"Idavidrein/gpqa","files":"(?i)(diamond.*\\.(csv|parquet))$","split":"train","harness":["gpqa_diamond_cot_zeroshot"]},
+  "math500": {"repo":"HuggingFaceH4/MATH-500","files":"\\.(parquet|jsonl)$","split":"test","harness":["minerva_math500"]},
+  "bbh": {"repo":"lukaemon/bbh","files":"\\.(parquet|json)$","split":"test","harness":["bbh"]},
+  "humaneval_plus": {"repo":"evalplus/humanevalplus","files":"\\.(parquet|jsonl)(\\.gz)?$","split":"test","evalplus":"humaneval"},
+  "mbpp_plus": {"repo":"evalplus/mbppplus","files":"\\.(parquet|jsonl)(\\.gz)?$","split":"test","evalplus":"mbpp"},
+  "belebele": {"repo":"facebook/belebele","files":"(eng_Latn|arb_Arab|fra_Latn).*\\.(parquet|jsonl)(\\.gz)?$","split":"test","harness":["belebele_eng_Latn","belebele_arb_Arab","belebele_fra_Latn"]},
+  "longbench": {"repo":"THUDM/LongBench","files":"^data\\.zip$","split":"test","harness":["longbench_narrativeqa","longbench_qasper","longbench_trec"],"selected":["narrativeqa","qasper","trec"]}
+}

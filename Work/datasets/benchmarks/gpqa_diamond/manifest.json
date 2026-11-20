@@ -1,0 +1,17 @@
+{
+  "repo": "Idavidrein/gpqa",
+  "revision": "83022cefff930aea54f654c0b282e74b9eeda5c6",
+  "status": "incomplete",
+  "files": [],
+  "gated": "auto",
+  "license": "cc-by-4.0",
+  "error": "https://huggingface.co/datasets/Idavidrein/gpqa/resolve/83022cefff930aea54f654c0b282e74b9eeda5c6/gpqa_diamond.csv: curl: (22) The requested URL returned error: 401",
+  "benchmark": {
+    "repo": "Idavidrein/gpqa",
+    "files": "(?i)(diamond.*\\.(csv|parquet))$",
+    "split": "train",
+    "harness": [
+      "gpqa_diamond_cot_zeroshot"
+    ]
+  }
+}

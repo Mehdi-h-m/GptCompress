@@ -1,0 +1,17 @@
+{
+  "status": "complete",
+  "tasks": {},
+  "model_load_seconds": 0.6790592999968794,
+  "smoke": {
+    "prompt": "<|im_start|>user\nAnswer in one word. What color is a clear daytime sky?<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "response": "Blue.",
+    "tokens": 3,
+    "seconds": 37.42012020000402
+  },
+  "resources": {
+    "peak_rss_bytes": 8193634304,
+    "peak_vram_bytes": null,
+    "elapsed_seconds": 39.53532109999651,
+    "method": "Windows process peak working set, elapsed wall time; CPU-only inference"
+  }
+}

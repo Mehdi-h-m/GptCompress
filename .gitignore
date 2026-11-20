@@ -1,0 +1,26 @@
+# Local environments, caches, and credentials
+.venv/
+.hf-cache/
+.nltk-data/
+.cache/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.env
+.env.*
+!.env.example
+
+# Downloaded assets are reproduced from tracked manifests
+/Work/models/**/*
+!/Work/models/**/
+!/Work/models/**/manifest.json
+/Work/datasets/**/*
+!/Work/datasets/**/
+!/Work/datasets/**/manifest.json
+
+# Local model weights and evaluation caches
+*.safetensors
+*.gguf
+*.db
+*.db-shm
+*.db-wal

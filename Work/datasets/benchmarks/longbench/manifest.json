@@ -1,0 +1,30 @@
+{
+  "repo": "THUDM/LongBench",
+  "revision": "5e628be450b7e67fb7ae6e201bd6d8f7056f7672",
+  "status": "complete",
+  "files": [
+    {
+      "path": "data.zip",
+      "bytes": 113932529,
+      "sha256": "cb45b11a4133c6bc1d6a44b0f8e701335ff1e543195db1103472e575857f7f64",
+      "mtime_ns": 1795195887918803000
+    }
+  ],
+  "gated": false,
+  "license": null,
+  "benchmark": {
+    "repo": "THUDM/LongBench",
+    "files": "^data\\.zip$",
+    "split": "test",
+    "harness": [
+      "longbench_narrativeqa",
+      "longbench_qasper",
+      "longbench_trec"
+    ],
+    "selected": [
+      "narrativeqa",
+      "qasper",
+      "trec"
+    ]
+  }
+}

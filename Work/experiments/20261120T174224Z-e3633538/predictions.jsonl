@@ -1,0 +1,1 @@
+{"task": "smoke", "doc_id": "sky", "prompt": "<|im_start|>user\nAnswer in one word. What color is a clear daytime sky?<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n", "response": "Blue.", "tokens": 3, "seconds": 36.34672630000205}

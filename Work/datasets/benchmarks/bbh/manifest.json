@@ -1,0 +1,179 @@
+{
+  "repo": "lukaemon/bbh",
+  "revision": "982bb89fd79532a8ac676a61fc42eb1aeec63f99",
+  "status": "complete",
+  "files": [
+    {
+      "path": "boolean_expressions/test-00000-of-00001.parquet",
+      "bytes": 4524,
+      "sha256": "c5de3d5c30fecdee9fdd6348f4fb324f64be8597f28e9d60d4e647e06df28b27",
+      "mtime_ns": 1795195828224777400
+    },
+    {
+      "path": "multistep_arithmetic_two/test-00000-of-00001.parquet",
+      "bytes": 7360,
+      "sha256": "4f7194caf79b38fce0db1a6aa42541692d4f5e2cbbd199dd68cb6901c69b1e85",
+      "mtime_ns": 1795195829261009400
+    },
+    {
+      "path": "sports_understanding/test-00000-of-00001.parquet",
+      "bytes": 7910,
+      "sha256": "0f67780a329b4b4a22698d19f95f165b68831aad18c59236834b2c7272d37008",
+      "mtime_ns": 1795195830390250500
+    },
+    {
+      "path": "navigate/test-00000-of-00001.parquet",
+      "bytes": 9535,
+      "sha256": "ea2c81b9b19321c0183f2c4b2d59197af01c08d41247105183733b2cfbad3658",
+      "mtime_ns": 1795195831320964900
+    },
+    {
+      "path": "penguins_in_a_table/test-00000-of-00001.parquet",
+      "bytes": 9596,
+      "sha256": "ac7e9c4b868eda0aefcbad9b6e0f3a9f6a8f22b47e413858599f899e28a61ffd",
+      "mtime_ns": 1795195831748059700
+    },
+    {
+      "path": "dyck_languages/test-00000-of-00001.parquet",
+      "bytes": 9649,
+      "sha256": "041cf145093a075070392bb267f580d3035b5faa922a72c9a58cf70de295982b",
+      "mtime_ns": 1795195832481215700
+    },
+    {
+      "path": "hyperbaton/test-00000-of-00001.parquet",
+      "bytes": 10041,
+      "sha256": "e231956d054f3bfa868482348e9c089d41239cc5a1aafe4e1b08a6fcbd0474c7",
+      "mtime_ns": 1795195832881295200
+    },
+    {
+      "path": "object_counting/test-00000-of-00001.parquet",
+      "bytes": 10229,
+      "sha256": "81f3549f01589125e5d7bee1f5a261a0611c418c1b3bee6b9bc25136b5915fc0",
+      "mtime_ns": 1795195833329368800
+    },
+    {
+      "path": "web_of_lies/test-00000-of-00001.parquet",
+      "bytes": 15125,
+      "sha256": "ad0a5707016259f060927a7a777bb0434c5e5293da0f6570e4e185919c434f11",
+      "mtime_ns": 1795195834702698400
+    },
+    {
+      "path": "ruin_names/test-00000-of-00001.parquet",
+      "bytes": 15202,
+      "sha256": "d75882ee191fc60464c4c8cb6d90085a565de4476f58c8ada0fe31f0d18e3a24",
+      "mtime_ns": 1795195836180550100
+    },
+    {
+      "path": "snarks/test-00000-of-00001.parquet",
+      "bytes": 15871,
+      "sha256": "4aa85c7c94ba0b6de3e5245af6af2dac4df2b979e8fc944513a317d20d77382e",
+      "mtime_ns": 1795195837252816200
+    },
+    {
+      "path": "disambiguation_qa/test-00000-of-00001.parquet",
+      "bytes": 15954,
+      "sha256": "94f25b514de46673114f229eea71a88b22f5777fc852f4b71ccb0291fd65b0de",
+      "mtime_ns": 1795195838056009300
+    },
+    {
+      "path": "date_understanding/test-00000-of-00001.parquet",
+      "bytes": 17555,
+      "sha256": "886b90d48cc66c87d26c36d64ef8119523b2021aa02dcc78ea326d7595440e1f",
+      "mtime_ns": 1795195839593577300
+    },
+    {
+      "path": "geometric_shapes/test-00000-of-00001.parquet",
+      "bytes": 19668,
+      "sha256": "83cf995f268296d0c510502f879932419f2d6a2ff1a0574746b15c53e9348967",
+      "mtime_ns": 1795195840278787300
+    },
+    {
+      "path": "reasoning_about_colored_objects/test-00000-of-00001.parquet",
+      "bytes": 19694,
+      "sha256": "5c93a11b4ced66cc2afe4cd1348a36666eba10a2aeaa023c0e3609102f4ad130",
+      "mtime_ns": 1795195841797630500
+    },
+    {
+      "path": "logical_deduction_three_objects/test-00000-of-00001.parquet",
+      "bytes": 20579,
+      "sha256": "69666640c655c70e4ee6628dd2475e911981b0e828e43ac69bbb9d8144144586",
+      "mtime_ns": 1795195842514287800
+    },
+    {
+      "path": "movie_recommendation/test-00000-of-00001.parquet",
+      "bytes": 21291,
+      "sha256": "bc9e7238d45633dd1fd17ca6bef47fe07f1b709e8d1539c7002c2e7da0add4fe",
+      "mtime_ns": 1795195843627047600
+    },
+    {
+      "path": "tracking_shuffled_objects_three_objects/test-00000-of-00001.parquet",
+      "bytes": 24144,
+      "sha256": "b3d557e426ac57f4b2194b4be5d810eb4425ff5a2c776d9b0bb6572b246c4564",
+      "mtime_ns": 1795195844067136200
+    },
+    {
+      "path": "logical_deduction_five_objects/test-00000-of-00001.parquet",
+      "bytes": 32081,
+      "sha256": "413dd1a9abdaeffa6ec7869c21914050f0604adec94048c60071b80889189a8e",
+      "mtime_ns": 1795195845318907700
+    },
+    {
+      "path": "temporal_sequences/test-00000-of-00001.parquet",
+      "bytes": 34510,
+      "sha256": "b12750a723e54541eb27f6f534d5f91650e8d406e81cd5ac23c3ee7f780ad8ce",
+      "mtime_ns": 1795195846750214200
+    },
+    {
+      "path": "formal_fallacies/test-00000-of-00001.parquet",
+      "bytes": 34557,
+      "sha256": "dc98f32c2cb21deceb67dae775dcd6de03ba8c067ac280f43f7dd8973fcc807c",
+      "mtime_ns": 1795195847235828300
+    },
+    {
+      "path": "tracking_shuffled_objects_five_objects/test-00000-of-00001.parquet",
+      "bytes": 35811,
+      "sha256": "ba3cdb666a305b3bd87be668e16c66b6bc7ada0a71cd53bc25f65932a814d00a",
+      "mtime_ns": 1795195848162514800
+    },
+    {
+      "path": "logical_deduction_seven_objects/test-00000-of-00001.parquet",
+      "bytes": 42142,
+      "sha256": "50912eb454be853c03409555f5aae43ff3a0bad1775ee29c13f917bee972105a",
+      "mtime_ns": 1795195849462281100
+    },
+    {
+      "path": "word_sorting/test-00000-of-00001.parquet",
+      "bytes": 44112,
+      "sha256": "7c623d20c1e38e7b1b67213d0933b7b24b18edb5b9788a33ae0b05add40f7201",
+      "mtime_ns": 1795195850171444300
+    },
+    {
+      "path": "tracking_shuffled_objects_seven_objects/test-00000-of-00001.parquet",
+      "bytes": 47417,
+      "sha256": "23f26fa036a7314b86e6eca4ad985218930645b47a31f920b65da70b22f98227",
+      "mtime_ns": 1795195850999636000
+    },
+    {
+      "path": "salient_translation_error_detection/test-00000-of-00001.parquet",
+      "bytes": 54809,
+      "sha256": "fd56dfa6d5a3c00fab3cf0a3b951a4cb2d5daf6cd0a564b4229dbc7fee13ba5e",
+      "mtime_ns": 1795195851871693200
+    },
+    {
+      "path": "causal_judgement/test-00000-of-00001.parquet",
+      "bytes": 67780,
+      "sha256": "787b07b98aaaaeda52da57852a61fa89fa136d7026008e3f4958293384949de3",
+      "mtime_ns": 1795195853018989800
+    }
+  ],
+  "gated": false,
+  "license": null,
+  "benchmark": {
+    "repo": "lukaemon/bbh",
+    "files": "\\.(parquet|json)$",
+    "split": "test",
+    "harness": [
+      "bbh"
+    ]
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "profile": "dev",
+  "datasets": {
+    "gsm8k": {
+      "repo": "openai/gsm8k",
+      "revision": "740312add88f781978c0658806c59bc2815b9866",
+      "split": "test",
+      "files": {
+        "main/test-00000-of-00001.parquet": "ee7b8da9e381df27b9e3f7758a159ab2bdaa4dbaa910546cbbc47e0cb44e4f59",
+        "main/train-00000-of-00001.parquet": "ea82612ea9582142387730c793eb67d3b12849002bc0b7fa6f8efafa7351419d"
+      },
+      "task_yaml_sha256": "82eb1780b263bc040729032b3e076990c7933f42163c91e359f38820dd1d8833",
+      "question_ids": [
+        1309,
+        228,
+        51,
+        563,
+        501,
+        457,
+        285,
+        209,
+        1116,
+        178
+      ],
+      "fewshot": 5,
+      "generation_kwargs": {
+        "until": [
+          "Question:",
+          "</s>",
+          "<|im_end|>"
+        ],
+        "do_sample": false,
+        "temperature": 0.0,
+        "max_gen_toks": 192
+      }
+    },
+    "ifeval": {
+      "repo": "google/IFEval",
+      "revision": "966cd89545d6b6acfd7638bc708b98261ca58e84",
+      "split": "train",
+      "files": {
+        "ifeval_input_data.jsonl": "6a85310ca8ce15eff755aa08a3a4ff931c7e273e7515ebb3c492ea85fd8288f2"
+      },
+      "task_yaml_sha256": "3d8a3eb32de03f6a23ac87b46951d972a4ec7cb137e753365c0271594e38f84b",
+      "question_ids": [
+        114,
+        25,
+        281,
+        250,
+        228,
+        142,
+        104,
+        89,
+        432,
+        32
+      ],
+      "fewshot": 0,
+      "generation_kwargs": {
+        "until": [],
+        "do_sample": false,
+        "temperature": 0.0,
+        "max_gen_toks": 256
+      }
+    }
+  },
+  "seed": 42,
+  "batch_size": 1,
+  "context_tokens": 2048,
+  "enable_thinking": false,
+  "chat_template_sha256": "41d5929bf73796beb66809ac700b2cf3ff81694f933e5c14d52b7fd6963c947d",
+  "decode": "greedy",
+  "versions": {
+    "torch": "2.8.0+cpu",
+    "transformers": "4.57.6",
+    "accelerate": "1.16.0",
+    "safetensors": "0.8.0",
+    "lm-eval": "0.4.13",
+    "datasets": "5.0.1"
+  },
+  "punkt_tab_english": {
+    "abbrev_types.txt": "92a3e070f43d9b4c5534758ca40ad7343b04e7e29bfe0c2eb658a39445a4f779",
+    "collocations.tab": "8e2da1225e4dd2cc9dba261ee231ccb134859e21b46006e7f472c5ee269af0cf",
+    "ortho_context.tab": "4bbcca25ed3d3f06c02402abf8419b9f033b8adc06e7b482eca4e45f81a5dc4c",
+    "sent_starters.txt": "f3f8535483e1dba487241b764945168123bca3209a9645e59acd1225dc76edac"
+  },
+  "run_id": "20261120T174330Z-13d88e4f",
+  "created_at": "2026-11-20T17:43:30.383944+00:00",
+  "model_id": "Qwen/Qwen3-4B",
+  "model_revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+  "model_identity": "e76546ce7dfa900d8f70445161e003905479357054ef5509664b85134953a53c",
+  "model_size_bytes": 8044982000,
+  "asset_size_bytes": 8060925056,
+  "protocol_hash": "e08aa7a5105f0da52f3d42514c831b72b154bb1e0404e1d8849b8c762bec30c8",
+  "parent_run_id": null,
+  "compression": null,
+  "device": "cpu",
+  "dtype": "bfloat16",
+  "cpu_threads": 4,
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "available_ram_before_load_bytes": 7902040064,
+  "source_hash": "1b32aca279b390e1ba9dcb33119562bc1c9c7f75f6255063aaeebe5be368987d"
+}

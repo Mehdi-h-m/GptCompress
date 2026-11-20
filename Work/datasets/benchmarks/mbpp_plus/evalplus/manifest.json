@@ -1,0 +1,10 @@
+{
+  "release": "https://api.github.com/repos/evalplus/mbppplus_release/releases/tags/v0.2.0",
+  "tag": "v0.2.0",
+  "status": "complete",
+  "upstream_asset_id": 162592602,
+  "archive_sha256": "af43697e8791c4c149bdfd6b489d8b5412507551ac20e28a439f650b8225db63",
+  "bytes": 2592369,
+  "path": "MbppPlus.jsonl",
+  "sha256": "b54e762755248ca411b523c917fa9f93c07b5ff2966bf60b3917b853926a3dad"
+}

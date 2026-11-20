@@ -1,0 +1,15 @@
+{
+  "status": "interrupted",
+  "tasks": {
+    "gsm8k": {
+      "status": "pending",
+      "n": 0
+    },
+    "ifeval": {
+      "status": "pending",
+      "n": 0
+    }
+  },
+  "model_load_seconds": 0.5704081000003498,
+  "error": "Stopped during first GSM8K generation to run the shorter, batched pilot."
+}

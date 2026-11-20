@@ -1,0 +1,34 @@
+{
+  "repo": "openai/gsm8k",
+  "revision": "740312add88f781978c0658806c59bc2815b9866",
+  "status": "complete",
+  "files": [
+    {
+      "path": "main/test-00000-of-00001.parquet",
+      "bytes": 419088,
+      "sha256": "ee7b8da9e381df27b9e3f7758a159ab2bdaa4dbaa910546cbbc47e0cb44e4f59",
+      "mtime_ns": 1795195813806548600
+    },
+    {
+      "path": "main/train-00000-of-00001.parquet",
+      "bytes": 2306545,
+      "sha256": "ea82612ea9582142387730c793eb67d3b12849002bc0b7fa6f8efafa7351419d",
+      "mtime_ns": 1795195815606915100
+    }
+  ],
+  "gated": false,
+  "license": [
+    "mit"
+  ],
+  "benchmark": {
+    "repo": "openai/gsm8k",
+    "files": "^main/.*\\.parquet$",
+    "split": "test",
+    "required": [
+      "main/test"
+    ],
+    "harness": [
+      "gsm8k"
+    ]
+  }
+}

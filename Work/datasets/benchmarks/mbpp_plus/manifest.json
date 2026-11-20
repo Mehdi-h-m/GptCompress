@@ -1,0 +1,21 @@
+{
+  "repo": "evalplus/mbppplus",
+  "revision": "b2d74c91837c3f2a20c1299ae98133cbe7cfa077",
+  "status": "complete",
+  "files": [
+    {
+      "path": "data/test-00000-of-00001-d5781c9c51e02795.parquet",
+      "bytes": 1129135,
+      "sha256": "dc20030b3788fccf617444edcb34138ef13d7e4fafd17bfcb8c1279dbb12399b",
+      "mtime_ns": 1795195859155791500
+    }
+  ],
+  "gated": false,
+  "license": "apache-2.0",
+  "benchmark": {
+    "repo": "evalplus/mbppplus",
+    "files": "\\.(parquet|jsonl)(\\.gz)?$",
+    "split": "test",
+    "evalplus": "mbpp"
+  }
+}

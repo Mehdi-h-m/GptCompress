@@ -1,0 +1,27 @@
+{
+  "repo": "evalplus/humanevalplus",
+  "revision": "d32357cf319e50e9c8d8dab5ea876c72b0fd321b",
+  "status": "complete",
+  "files": [
+    {
+      "path": "data/test-00000-of-00001-5973903632b82d40.parquet",
+      "bytes": 2902210,
+      "sha256": "4436f5c03d77c17e0cbc57543b90665b5c1266f55a43992a5ed7922cd34a7558",
+      "mtime_ns": 1795195854857391600
+    },
+    {
+      "path": "test.jsonl",
+      "bytes": 11452868,
+      "sha256": "908377f1daf28dcb36846db73a5662b2e05a9907407c2696c89ad9d3b0b04492",
+      "mtime_ns": 1795195857685495800
+    }
+  ],
+  "gated": false,
+  "license": "apache-2.0",
+  "benchmark": {
+    "repo": "evalplus/humanevalplus",
+    "files": "\\.(parquet|jsonl)(\\.gz)?$",
+    "split": "test",
+    "evalplus": "humaneval"
+  }
+}

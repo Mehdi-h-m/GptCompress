@@ -1,0 +1,15 @@
+{
+  "status": "interrupted",
+  "tasks": {
+    "gsm8k": {
+      "status": "pending",
+      "n": 0
+    },
+    "ifeval": {
+      "status": "pending",
+      "n": 0
+    }
+  },
+  "model_load_seconds": 0.45672580000245944,
+  "error": "Stopped during native BF16 GSM8K generation after identifying the AVX2 linear kernel bottleneck."
+}

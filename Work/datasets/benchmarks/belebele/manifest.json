@@ -1,0 +1,37 @@
+{
+  "repo": "facebook/belebele",
+  "revision": "7899cdfa4e1e0d733fd77c848e2c273cb1d32be2",
+  "status": "complete",
+  "files": [
+    {
+      "path": "data/eng_Latn.jsonl",
+      "bytes": 836071,
+      "sha256": "15af884c2b5994fdc71199e79d553a1864b08ce1b31894aa87f6be925a064a31",
+      "mtime_ns": 1795195861214606600
+    },
+    {
+      "path": "data/fra_Latn.jsonl",
+      "bytes": 1084944,
+      "sha256": "11c3cd50907631642e6dca8396974e4d0dfbf6603e0f6e35d6c1e64eed662060",
+      "mtime_ns": 1795195863670087400
+    },
+    {
+      "path": "data/arb_Arab.jsonl",
+      "bytes": 2847724,
+      "sha256": "a2282b0974826172b1ce76a5d9e362091cfc8a7a25023df2d011f88f588b56e0",
+      "mtime_ns": 1795195864293751900
+    }
+  ],
+  "gated": false,
+  "license": "cc-by-sa-4.0",
+  "benchmark": {
+    "repo": "facebook/belebele",
+    "files": "(eng_Latn|arb_Arab|fra_Latn).*\\.(parquet|jsonl)(\\.gz)?$",
+    "split": "test",
+    "harness": [
+      "belebele_eng_Latn",
+      "belebele_arb_Arab",
+      "belebele_fra_Latn"
+    ]
+  }
+}
