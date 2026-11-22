@@ -75,6 +75,10 @@ def reconcile_jobs(ctx) -> dict:
         with ctx.db_lock:
             attempts = [repos.attempt_dict(a) for a in repos.list_attempts(ctx.conn, job["id"])]
         terminal = repos.TERMINAL_JOB_STATES
+        # an assisted attempt parked in awaiting_user belongs to the user's live
+        # notebook work: never fail it, never re-dispatch under it
+        if any(a["state"] == "awaiting_user" for a in attempts):
+            continue
         for attempt in [a for a in attempts if a["state"] not in terminal]:
             if runner.adopt_or_fail(ctx, job, attempt) == "adopted":
                 adopted.append(attempt["id"])
@@ -98,6 +102,7 @@ def reconcile_jobs(ctx) -> dict:
                     idempotency_key=f"run-{job['id']}-{used + 1}",
                     payload={"job_id": job["id"], "attempt_id": attempt["id"]},
                 )
+                repos.set_attempt_operation(ctx.conn, attempt["id"], operation["id"])
                 repos.set_job_state(ctx.conn, job["id"], "queued")
                 repos.audit(ctx.conn, "daemon", "job.rerun_scheduled", job["id"],
                             {"attempt": attempt["id"], "operation": operation["id"]})

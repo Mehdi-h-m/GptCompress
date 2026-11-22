@@ -29,11 +29,14 @@ def _provider_line(provider: dict) -> str:
 @providers_app.command("connect")
 def connect(
     ctx: typer.Context,
-    adapter: str = typer.Argument(..., help="Adapter type: local-runner, filesystem, mock"),
+    adapter: str = typer.Argument(..., help="Adapter type: local-runner, filesystem, hf, mock"),
     name: str = typer.Option(..., "--name", help="Display name for this instance"),
     root: Path = typer.Option(None, "--root", help="Store root directory (filesystem adapter)"),
+    repo_id: str = typer.Option(None, "--repo-id", help="Dataset repo (hf adapter), e.g. owner/drm-store"),
     region: str = typer.Option(None, "--region", help="Region where applicable"),
-    credential_ref: str = typer.Option(None, "--credential-ref", help="Credential store reference ID"),
+    credential_ref: str = typer.Option(
+        None, "--credential-ref", help="Credential reference: env:HF_TOKEN, a stored cred id, or omit for the hub's default resolution"
+    ),
     json_mode: bool = JSON_OPTION,
     dry_run: bool = DRY_RUN_OPTION,
 ) -> None:
@@ -42,6 +45,8 @@ def connect(
     config = {}
     if root is not None:
         config["root"] = str(root)
+    if repo_id is not None:
+        config["repo_id"] = repo_id
     payload = {
         "adapter": adapter,
         "name": name,

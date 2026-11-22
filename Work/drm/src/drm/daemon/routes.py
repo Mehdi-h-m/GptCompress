@@ -18,7 +18,7 @@ from drm.catalog import service
 from drm.catalog.errors import CatalogError
 from drm.contracts import ErrorCodes, envelope, error_record
 from drm.planner import core as planner
-from drm.providers import registry
+from drm.providers import hf, registry
 from drm.providers.base import AdapterError
 from drm.store import repos
 from drm.store.db import transaction
@@ -126,6 +126,8 @@ def register_routes(app: FastAPI, ctx) -> None:
                 return envelope(
                     {"operation": repos.operation_dict(existing), "reused": True}
                 )
+            compute_row = repos.get_provider(ctx.conn, spec["compute_provider"])
+            execution = compute_row["execution"] if compute_row is not None else "api"
             job = repos.create_job(
                 ctx.conn,
                 job_id=repos.new_id("job"),
@@ -146,6 +148,7 @@ def register_routes(app: FastAPI, ctx) -> None:
                 idempotency_key=key,
                 payload={"job_id": job["id"], "attempt_id": attempt["id"]},
             )
+            repos.set_attempt_operation(ctx.conn, attempt["id"], operation["id"])
             planner.record_decision(ctx.conn, "job.place", job["id"], plan_doc)
             repos.audit(ctx.conn, "drm", "run.submitted", job["id"],
                         {"operation": operation["id"], "placement": plan_doc["chosen"]})
@@ -153,6 +156,20 @@ def register_routes(app: FastAPI, ctx) -> None:
             job_doc = repos.job_dict(repos.get_job(ctx.conn, job["id"]))
             attempt_doc = repos.attempt_dict(repos.get_attempt(ctx.conn, attempt["id"]))
             operation_doc = repos.operation_dict(repos.get_operation(ctx.conn, operation["id"]))
+
+        if execution == "assisted":
+            # bundle preparation is fast and local: park the run in awaiting_user
+            # synchronously so the submit response carries the instructions (exit 3)
+            from drm.workers import assisted as assisted_worker
+
+            assisted_result = assisted_worker.prepare_bundle(ctx, job_doc, attempt_doc, spec)
+            with ctx.db_lock:
+                repos.set_operation_state(ctx.conn, operation["id"], "awaiting_user", result=assisted_result)
+                job_doc = repos.job_dict(repos.get_job(ctx.conn, job["id"]))
+                attempt_doc = repos.attempt_dict(repos.get_attempt(ctx.conn, attempt["id"]))
+                operation_doc = repos.operation_dict(repos.get_operation(ctx.conn, operation["id"]))
+            return envelope({"job": job_doc, "attempt": attempt_doc, "operation": operation_doc, "plan": plan_doc})
+
         executor.submit(operation)
         return envelope({"job": job_doc, "attempt": attempt_doc, "operation": operation_doc, "plan": plan_doc})
 
@@ -230,6 +247,58 @@ def register_routes(app: FastAPI, ctx) -> None:
             operation_doc = repos.operation_dict(repos.get_operation(ctx.conn, operation["id"]))
         executor.submit(operation)
         return envelope({"job": job_doc, "attempt": attempt_doc, "operation": operation_doc})
+
+    # --- attempts (assisted execution) --------------------------------------------
+
+    @app.get("/attempts/{attempt_id}")
+    def get_attempt(attempt_id: str):
+        with ctx.db_lock:
+            row = repos.get_attempt(ctx.conn, attempt_id)
+        if row is None:
+            return error_response(ErrorCodes.NOT_FOUND, f"unknown attempt {attempt_id}", status=404)
+        data = repos.attempt_dict(row)
+        instructions = None
+        result = data.get("result") or {}
+        if result.get("instructions"):
+            path = Path(result["instructions"])
+            if path.is_file():
+                instructions = path.read_text(encoding="utf-8")
+        return envelope({"attempt": data, "instructions": instructions})
+
+    @app.post("/attempts/{attempt_id}/import")
+    def import_attempt(attempt_id: str, body: dict):
+        output_dir = body.get("output_dir")
+        if not output_dir:
+            return error_response("validation", "import requires 'output_dir'")
+        with ctx.db_lock:
+            row = repos.get_attempt(ctx.conn, attempt_id)
+        if row is None:
+            return error_response(ErrorCodes.NOT_FOUND, f"unknown attempt {attempt_id}", status=404)
+        attempt_data = repos.attempt_dict(row)
+        with ctx.db_lock:
+            job_row = repos.get_job(ctx.conn, attempt_data["job_id"])
+        if job_row is None:
+            return error_response(ErrorCodes.NOT_FOUND, f"job {attempt_data['job_id']} is gone", status=404)
+        job_data = repos.job_dict(job_row)
+
+        from drm.workers import assisted as assisted_worker
+
+        with ctx.db_lock:
+            op = repos.create_operation(
+                ctx.conn, kind="attempt.import",
+                payload={"attempt_id": attempt_id, "output_dir": output_dir},
+            )
+        try:
+            result = assisted_worker.import_results(ctx, job_data, attempt_data, output_dir)
+        except CatalogError as exc:
+            with ctx.db_lock:
+                repos.set_operation_state(ctx.conn, op["id"], "failed",
+                                          error={"code": exc.code, "message": exc.message})
+            return error_response(exc.code, exc.message)
+        with ctx.db_lock:
+            repos.set_operation_state(ctx.conn, op["id"], "complete", result=result)
+            op_doc = repos.operation_dict(repos.get_operation(ctx.conn, op["id"]))
+        return envelope({"import": result, "operation": op_doc})
 
     # --- decisions ---------------------------------------------------------------
 
@@ -338,7 +407,7 @@ def register_routes(app: FastAPI, ctx) -> None:
             payload = service.normalize_ingest_payload(body)
         except CatalogError as exc:
             return error_response(exc.code, exc.message)
-        if not Path(payload["source"]).is_file():
+        if not payload["source"].startswith("hf://") and not Path(payload["source"]).is_file():
             return error_response("validation", f"source is not a file: {payload['source']}")
         row, err = _get_provider_or_404(ctx, payload["store"])
         if err is not None:
@@ -359,9 +428,24 @@ def register_routes(app: FastAPI, ctx) -> None:
 
     def _ingest_plan_or_error(ctx, row, payload):
         try:
-            plan = service.ingest_plan(ctx.conn, row, payload)
+            if payload["source"].startswith("hf://"):
+                parsed = hf.parse_hf_uri(payload["source"])
+                plan = {
+                    "source": payload["source"],
+                    "source_size": None,
+                    "origin": parsed,
+                    "store": {"id": row["id"], "display_name": row["display_name"]},
+                    "artifact_id": payload.get("artifact_id") or "auto",
+                    "locator": "assigned on publish",
+                    "verify": payload["verify"],
+                    "blockers": [],
+                }
+            else:
+                plan = service.ingest_plan(ctx.conn, row, payload)
         except CatalogError as exc:
             return error_response(exc.code, exc.message)
+        except hf.AdapterError as exc:
+            return error_response("validation", str(exc))
         return envelope({"dry_run": True, "plan": plan})
 
     @app.post("/data/pin")

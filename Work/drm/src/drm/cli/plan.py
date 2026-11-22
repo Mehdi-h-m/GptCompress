@@ -2,12 +2,24 @@
 
 from __future__ import annotations
 
+import json
+
 import typer
 
 from drm.cli.common import JSON_OPTION, CliState, request, resolve_state
 from drm.cli.output import print_payload
 
 plan_app = typer.Typer(no_args_is_help=True, help="Preview placement plans")
+
+
+def _parse_param_value(value: str):
+    """JSON values (lists/objects) parse; everything else stays a string."""
+    if value[:1] in ("[", "{"):
+        try:
+            return json.loads(value)
+        except ValueError:
+            return value
+    return value
 
 
 def _manifest_options(func):
@@ -34,7 +46,7 @@ def _build_payload(task, inputs, params, store, name, experiment, max_attempts, 
             if "=" not in item:
                 raise typer.BadParameter(f"--param expects k=v, got {item!r}")
             key, value = item.split("=", 1)
-            parsed[key] = value
+            parsed[key] = _parse_param_value(value)
         payload["params"] = parsed
     if store is not None:
         payload["output_store"] = store

@@ -89,6 +89,7 @@ def _storage_candidates(conn) -> list[dict]:
 
 
 def _compute_candidates(conn) -> list[dict]:
+    """Active compute providers; API-execution placements rank before assisted ones."""
     candidates = []
     for row in repos.list_providers(conn):
         if row["kind"] not in ("compute", "combined") or row["state"] != "active":
@@ -98,10 +99,11 @@ def _compute_candidates(conn) -> list[dict]:
                 "provider_id": row["id"],
                 "display_name": row["display_name"],
                 "adapter": row["adapter"],
+                "execution": row["execution"],
                 "cost_estimate": 0.0,
             }
         )
-    candidates.sort(key=lambda c: c["provider_id"])
+    candidates.sort(key=lambda c: (0 if c["execution"] == "api" else 1, c["provider_id"]))
     return candidates
 
 
@@ -138,10 +140,13 @@ def plan(conn, payload: dict) -> dict:
             "compute": compute[0]["provider_id"],
             "output_store": stores[0]["provider_id"],
         }
+        execution = compute[0]["execution"]
         reason = (
-            "free local execution; lowest estimated cost (0 USD);"
-            " deterministic tie-break by provider id"
+            "free execution; lowest estimated cost (0 USD); API placements rank before"
+            " assisted ones; deterministic tie-break by provider id"
         )
+        if execution == "assisted":
+            reason += "; this placement requires manual notebook execution"
     alternatives = [
         {"face": "compute", **candidate, "selected": bool(chosen) and candidate["provider_id"] == chosen["compute"]}
         for candidate in compute

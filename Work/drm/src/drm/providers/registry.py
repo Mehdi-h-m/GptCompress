@@ -22,6 +22,8 @@ from drm.store import repos
 ADAPTERS: dict[str, dict] = {
     "local-runner": {"kind": "compute", "execution": "api", "faces": ["compute"]},
     "filesystem": {"kind": "storage", "execution": "api", "faces": ["storage"], "required_config": ["root"]},
+    "hf": {"kind": "storage", "execution": "api", "faces": ["storage"], "required_config": ["repo_id"]},
+    "kaggle": {"kind": "compute", "execution": "assisted", "faces": ["compute"]},
     "mock": {"kind": "combined", "execution": "api", "faces": ["compute", "storage"]},
 }
 
@@ -80,13 +82,21 @@ def connect(conn, payload: dict) -> tuple[dict, bool]:
     return provider_dict(row), True
 
 
-def build_bundle(adapter: str, config: dict) -> AdapterBundle:
+def build_bundle(adapter: str, config: dict, credential_ref: str | None = None) -> AdapterBundle:
     validate_config(adapter, config)
     config = config or {}
     if adapter == "filesystem":
         return AdapterBundle(compute=None, storage=FilesystemStorage(config["root"]))
+    if adapter == "hf":
+        from drm.providers.hf import HfStorage
+
+        return AdapterBundle(compute=None, storage=HfStorage(config["repo_id"], credential_ref=credential_ref))
     if adapter == "local-runner":
         return AdapterBundle(compute=LocalCompute(config), storage=None)
+    if adapter == "kaggle":
+        from drm.providers.kaggle import KaggleCompute
+
+        return AdapterBundle(compute=KaggleCompute(config), storage=None)
     if adapter == "mock":
         name = config.get("name", "mock")
         return AdapterBundle(compute=MockCompute(name), storage=MockStorage(name))
@@ -94,7 +104,7 @@ def build_bundle(adapter: str, config: dict) -> AdapterBundle:
 
 
 def bundle_for_row(row) -> AdapterBundle:
-    return build_bundle(row["adapter"], json.loads(row["config_json"]))
+    return build_bundle(row["adapter"], json.loads(row["config_json"]), credential_ref=row["credential_ref"])
 
 
 def storage_for_row(row) -> StorageAdapter:

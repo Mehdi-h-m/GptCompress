@@ -40,7 +40,7 @@ def normalize_ingest_payload(body: dict) -> dict:
     return {
         "source": str(source),
         "store": body["store"],
-        "artifact_id": body.get("artifact_id") or None,
+        "artifact_id": body.get("artifact_id") or body.get("release") or None,
         "kind": body.get("kind") or "dataset_release",
         "format": body.get("format") or None,
         "split_identity": body.get("split_identity") or None,
@@ -51,8 +51,13 @@ def normalize_ingest_payload(body: dict) -> dict:
 
 def derive_ingest_key(store_row, payload: dict) -> str:
     """Derive a stable idempotency key when the caller did not supply one."""
+    source = payload["source"]
+    if source.startswith("hf://"):
+        resolved_source = source  # a URI is already stable; do not treat it as a path
+    else:
+        resolved_source = str(Path(source).resolve())
     material = "|".join(
-        ["ingest", str(Path(payload["source"]).resolve()), store_row["id"], payload.get("artifact_id") or ""]
+        ["ingest", resolved_source, store_row["id"], payload.get("artifact_id") or ""]
     )
     return "ingest-" + hashlib.sha256(material.encode()).hexdigest()[:16]
 
@@ -77,7 +82,7 @@ def ingest_plan(conn, store_row, payload: dict) -> dict:
 def ingest_file(conn, storage, *, provider_id: str, source: str, artifact_id: str | None = None,
                 kind: str = "dataset_release", format: str | None = None,
                 split_identity: str | None = None, access_class: str = "private",
-                verify: bool = True) -> dict:
+                verify: bool = True, producer: str = "drm data ingest") -> dict:
     path = Path(source)
     if not path.is_file():
         raise CatalogError("validation", f"source is not a file: {path}")
@@ -85,7 +90,7 @@ def ingest_file(conn, storage, *, provider_id: str, source: str, artifact_id: st
     if repos.get_artifact(conn, artifact_id) is not None:
         raise CatalogError("conflict", f"artifact {artifact_id} already exists")
     content_hash, byte_count = hash_file(path)
-    locator = f"{artifact_id}/{path.name}"
+    locator = storage.locator_for(artifact_id, path.name)
     try:
         written = storage.write(locator, path.read_bytes(), checksum=content_hash)
     except AdapterError as exc:
@@ -111,7 +116,7 @@ def ingest_file(conn, storage, *, provider_id: str, source: str, artifact_id: st
             format=format,
             split_identity=split_identity,
             access_class=access_class,
-            producer="drm data ingest",
+            producer=producer,
         )
         copy = repos.create_copy(
             conn,

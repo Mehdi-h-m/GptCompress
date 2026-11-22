@@ -310,6 +310,12 @@ def set_attempt_state(conn, attempt_id: str, state: str, result: dict | None = N
     conn.execute(f"UPDATE attempts SET {', '.join(sets)} WHERE id = ?", params)
 
 
+def set_attempt_operation(conn, attempt_id: str, operation_id: str) -> None:
+    conn.execute(
+        "UPDATE attempts SET operation_id = ? WHERE id = ?", (operation_id, attempt_id)
+    )
+
+
 def attempt_dict(row) -> dict:
     data = dict(row)
     data["result"] = _load(data.pop("result_json"), None)

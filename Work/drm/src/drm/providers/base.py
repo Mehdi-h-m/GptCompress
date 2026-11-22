@@ -83,6 +83,14 @@ class StorageAdapter(abc.ABC):
 
     adapter_name: str = "abstract"
 
+    def locator_for(self, artifact_id: str, filename: str) -> str:
+        """Map a logical artifact and file name to this provider's locator scheme.
+
+        Locators are adapter-owned: the catalog records whatever the adapter
+        produces here and hands it back verbatim on read/verify/evict.
+        """
+        return f"{artifact_id}/{filename}"
+
     @abc.abstractmethod
     def head(self, locator: str) -> dict:
         """Inspect one object: existence, size, version, checksum."""

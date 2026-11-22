@@ -65,7 +65,8 @@ def _stage_inputs(ctx, workdir: Path, spec: dict) -> list[dict]:
             raise CatalogError("adapter_error", f"staging {artifact_id} failed: {exc}")
         if sha256_hex(data) != copy["checksum"]:
             raise CatalogError("verify_failed", f"staged bytes of {artifact_id} do not match the catalog")
-        target = inputs_dir / copy["locator"].replace("/", "_")
+        # keep the staged name filesystem-safe for any provider's locator scheme
+        target = inputs_dir / f"{artifact_id}_{Path(copy['locator']).name}"
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)
         staged.append(
@@ -109,7 +110,7 @@ def publish_output(conn, storage, provider_id: str, job_id: str, output_name: st
                 f"output {output_name!r} of job {job_id} was already published with different content",
             )
         return {"artifact": service.artifact_dict(existing), "copy": None, "adopted": True}
-    locator = f"{artifact_id}/{output_name}"
+    locator = storage.locator_for(artifact_id, output_name)
     written = storage.write(locator, data, checksum=content_hash)
     with transaction(conn):
         artifact = repos.create_artifact(

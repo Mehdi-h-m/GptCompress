@@ -54,7 +54,7 @@ def _fail_on_failed_operation(state: CliState, operation: dict) -> None:
 @data_app.command("ingest")
 def ingest(
     ctx: typer.Context,
-    source: Path = typer.Argument(..., help="Path of the file to ingest"),
+    source: str = typer.Argument(..., help="Local file path or hf://datasets/<owner>/<repo>[@<rev>]/<file>"),
     store: str = typer.Option(..., "--store", help="Provider id of the destination store"),
     kind: str = typer.Option("dataset_release", "--kind"),
     fmt: str = typer.Option(None, "--format"),
@@ -62,22 +62,23 @@ def ingest(
     access_class: str = typer.Option("private", "--access-class"),
     verify: bool = typer.Option(True, "--verify/--no-verify"),
     artifact_id: str = typer.Option(None, "--id", help="Custom logical artifact id"),
+    release: str = typer.Option(None, "--release", help="Alias for --id (e.g. --release calib-v1)"),
     json_mode: bool = JSON_OPTION,
     dry_run: bool = DRY_RUN_OPTION,
     idempotency_key: str = IDEMPOTENCY_OPTION,
     timeout: int = typer.Option(600, "--timeout", help="Seconds to wait for the ingest to finish"),
 ) -> None:
-    """Register a file as a logical artifact with a verified physical copy."""
+    """Register a local file or a pinned hf:// shard as a verified artifact."""
     state: CliState = resolve_state(ctx, json_mode)
     payload = {
-        "source": str(source),
+        "source": source,
+        "artifact_id": artifact_id or release,
         "store": store,
         "kind": kind,
         "format": fmt,
         "split_identity": split_identity,
         "access_class": access_class,
         "verify": verify,
-        "artifact_id": artifact_id,
         "dry_run": dry_run,
         "idempotency_key": idempotency_key,
     }

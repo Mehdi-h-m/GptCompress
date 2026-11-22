@@ -121,14 +121,20 @@ class ConnectProviderDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Connect provider")
         self.adapter = QComboBox()
-        self.adapter.addItems(["local-runner", "filesystem", "mock"])
+        self.adapter.addItems(["local-runner", "filesystem", "hf", "kaggle", "mock"])
         self.name = QLineEdit()
         self.root = QLineEdit()
+        self.repo_id = QLineEdit()
+        self.repo_id.setPlaceholderText("owner/drm-store (hf adapter)")
+        self.credential_ref = QLineEdit()
+        self.credential_ref.setPlaceholderText("env:HF_TOKEN, cred id, or blank for hub default")
         self.region = QLineEdit()
         form = QFormLayout(self)
         form.addRow("Adapter", self.adapter)
         form.addRow("Display name", self.name)
         form.addRow("Store root (filesystem)", self.root)
+        form.addRow("Repo id (hf)", self.repo_id)
+        form.addRow("Credential ref", self.credential_ref)
         form.addRow("Region", self.region)
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
@@ -139,10 +145,13 @@ class ConnectProviderDialog(QDialog):
         config = {}
         if self.root.text().strip():
             config["root"] = self.root.text().strip()
+        if self.repo_id.text().strip():
+            config["repo_id"] = self.repo_id.text().strip()
         return {
             "adapter": self.adapter.currentText(),
             "name": self.name.text().strip(),
             "config": config,
+            "credential_ref": self.credential_ref.text().strip() or None,
             "region": self.region.text().strip() or None,
         }
 

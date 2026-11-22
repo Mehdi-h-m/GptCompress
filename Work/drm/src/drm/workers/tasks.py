@@ -75,6 +75,31 @@ def run_sleep(ctx: TaskContext) -> dict:
     return {"outputs": [output], "stats": {"slept_seconds": seconds}}
 
 
+def run_checkpoint_scan(ctx: TaskContext) -> dict:
+    """Scan items, writing one checkpoint file per item into workdir/checkpoints/.
+
+    Used for the Sprint 5 assisted-recovery demonstration: the notebook bundle
+    pushes these checkpoints to the durable store as it goes, so a lost session
+    re-dispatches only the missing items.
+    """
+    items = list(ctx.params.get("items", []))
+    checkpoints_dir = ctx.workdir / "checkpoints"
+    checkpoints_dir.mkdir(parents=True, exist_ok=True)
+    import hashlib
+
+    results = []
+    for item in items:
+        if ctx.cancelled():
+            raise TaskCancelled("cancel observed by checkpoint_scan@1")
+        digest = hashlib.sha256(item.encode()).hexdigest()
+        record = {"item": item, "sha256": digest}
+        data = json.dumps(record, indent=2, sort_keys=True).encode()
+        (checkpoints_dir / f"item-{digest[:12]}.json").write_bytes(data)
+        results.append(record)
+    output = _write_output(ctx, "summary.json", {"items": results, "task_type": "checkpoint_scan@1"})
+    return {"outputs": output and [output], "stats": {"items": len(results)}}
+
+
 def run_fail(ctx: TaskContext) -> dict:
     """Always fails; exercises retry paths and attempt accounting in tests."""
     raise RuntimeError(ctx.params.get("message", "injected task failure"))
@@ -84,5 +109,6 @@ TASK_REGISTRY: dict[str, Callable[[TaskContext], dict]] = {
     "noop@1": run_noop,
     "hash_inputs@1": run_hash_inputs,
     "sleep@1": run_sleep,
+    "checkpoint_scan@1": run_checkpoint_scan,
     "fail_always@1": run_fail,
 }
