@@ -7,6 +7,8 @@ rule 2); the CLI maps codes to exit codes. Mutating endpoints accept
 
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -15,7 +17,7 @@ from fastapi.responses import JSONResponse
 from drm.catalog import service
 from drm.catalog.errors import CatalogError
 from drm.contracts import ErrorCodes, envelope, error_record
-from drm.daemon.executor import Executor
+from drm.planner import core as planner
 from drm.providers import registry
 from drm.providers.base import AdapterError
 from drm.store import repos
@@ -39,6 +41,14 @@ def _catalog_guard(fn, *args, **kwargs):
         return error_response(exc.code, exc.message)
     except AdapterError as exc:
         return error_response(ErrorCodes.ADAPTER_ERROR, str(exc))
+
+
+def _planner_guard(fn, *args, **kwargs):
+    """Run a planner call, mapping validation errors to enveloped responses."""
+    try:
+        return fn(*args, **kwargs)
+    except CatalogError as exc:
+        return error_response(exc.code, exc.message)
 
 
 def _run_sync(ctx, kind: str, payload: dict, fn, idempotency_key: str | None = None):
@@ -76,7 +86,154 @@ def _get_provider_or_404(ctx, provider_id: str):
 
 
 def register_routes(app: FastAPI, ctx) -> None:
-    executor = Executor(ctx)
+    executor = ctx.executor  # created with the app; reconcile shares it
+
+    # --- plan ------------------------------------------------------------------
+
+    @app.post("/plan/preview")
+    def plan_preview(body: dict):
+        plan_doc = _planner_guard(lambda: planner.plan(ctx.conn, body))
+        if isinstance(plan_doc, JSONResponse):
+            return plan_doc
+        decision = _planner_guard(
+            lambda: planner.record_decision(ctx.conn, "plan.preview", plan_doc["spec"]["id"], plan_doc)
+        )
+        if isinstance(decision, JSONResponse):
+            return decision
+        plan_doc["decision_id"] = decision["id"]
+        return envelope({"plan": plan_doc})
+
+    # --- runs ------------------------------------------------------------------
+
+    @app.post("/run/submit")
+    def submit_run(body: dict):
+        plan_doc = _planner_guard(lambda: planner.plan(ctx.conn, body))
+        if isinstance(plan_doc, JSONResponse):
+            return plan_doc
+        if body.get("dry_run"):
+            return envelope({"dry_run": True, "plan": plan_doc})
+        if plan_doc["blockers"]:
+            return error_response(
+                "validation", "plan has blockers: " + "; ".join(plan_doc["blockers"])
+            )
+        spec = dict(plan_doc["spec"])
+        spec["output_store"] = plan_doc["chosen"]["output_store"]
+        spec["compute_provider"] = plan_doc["chosen"]["compute"]
+        key = body.get("idempotency_key") or _derive_run_key(spec)
+        with ctx.db_lock:
+            existing = repos.find_operation_by_key(ctx.conn, key)
+            if existing is not None:
+                return envelope(
+                    {"operation": repos.operation_dict(existing), "reused": True}
+                )
+            job = repos.create_job(
+                ctx.conn,
+                job_id=repos.new_id("job"),
+                name=body.get("name"),
+                experiment_id=body.get("experiment_id"),
+                spec=spec,
+                numerical_profile=spec.get("numerical_profile"),
+            )
+            attempt = repos.create_attempt(
+                ctx.conn,
+                attempt_id=repos.new_id("att"),
+                job_id=job["id"],
+                provider_id=spec["compute_provider"],
+            )
+            operation = repos.create_operation(
+                ctx.conn,
+                kind="run.job",
+                idempotency_key=key,
+                payload={"job_id": job["id"], "attempt_id": attempt["id"]},
+            )
+            planner.record_decision(ctx.conn, "job.place", job["id"], plan_doc)
+            repos.audit(ctx.conn, "drm", "run.submitted", job["id"],
+                        {"operation": operation["id"], "placement": plan_doc["chosen"]})
+            # capture everything the response needs before the worker thread runs
+            job_doc = repos.job_dict(repos.get_job(ctx.conn, job["id"]))
+            attempt_doc = repos.attempt_dict(repos.get_attempt(ctx.conn, attempt["id"]))
+            operation_doc = repos.operation_dict(repos.get_operation(ctx.conn, operation["id"]))
+        executor.submit(operation)
+        return envelope({"job": job_doc, "attempt": attempt_doc, "operation": operation_doc, "plan": plan_doc})
+
+    def _derive_run_key(spec: dict) -> str:
+        import hashlib
+
+        material = json.dumps(spec, sort_keys=True).encode()
+        return "run-" + hashlib.sha256(material).hexdigest()[:16]
+
+    @app.get("/run/{job_id}")
+    def get_run(job_id: str):
+        with ctx.db_lock:
+            job = repos.get_job(ctx.conn, job_id)
+            if job is None:
+                return error_response(ErrorCodes.NOT_FOUND, f"unknown job {job_id}", status=404)
+            attempts = [repos.attempt_dict(a) for a in repos.list_attempts(ctx.conn, job_id)]
+        return envelope({"job": repos.job_dict(job), "attempts": attempts})
+
+    @app.post("/run/{job_id}/cancel")
+    def cancel_run(job_id: str, body: dict | None = None):
+        with ctx.db_lock:
+            job = repos.get_job(ctx.conn, job_id)
+        if job is None:
+            return error_response(ErrorCodes.NOT_FOUND, f"unknown job {job_id}", status=404)
+        if body and body.get("dry_run"):
+            return envelope({"dry_run": True, "plan": {"job_id": job_id, "would_cancel": True}})
+        if job["state"] == "cancelled":
+            return envelope({"job": repos.job_dict(job), "already_cancelled": True})
+        if job["state"] in repos.TERMINAL_JOB_STATES:
+            return error_response(
+                "conflict", f"job {job_id} is already {job['state']} and cannot be cancelled", status=409
+            )
+        with ctx.db_lock:
+            ctx.cancelled.add(job_id)
+            repos.audit(ctx.conn, "drm", "run.cancel_requested", job_id, {})
+        return envelope({"job_id": job_id, "cancel_requested": True, "state": job["state"]})
+
+    @app.post("/jobs/{job_id}/retry")
+    def retry_job(job_id: str):
+        with ctx.db_lock:
+            job = repos.get_job(ctx.conn, job_id)
+            if job is None:
+                return error_response(ErrorCodes.NOT_FOUND, f"unknown job {job_id}", status=404)
+            if job["state"] not in ("failed", "cancelled"):
+                return error_response(
+                    "conflict",
+                    f"job {job_id} is {job['state']}; only failed or cancelled jobs can be retried",
+                    status=409,
+                )
+            spec = json.loads(job["dag_json"] or "{}")
+            used = repos.count_attempts(ctx.conn, job_id)
+            attempt = repos.create_attempt(
+                ctx.conn,
+                attempt_id=repos.new_id("att"),
+                job_id=job_id,
+                provider_id=spec.get("compute_provider"),
+            )
+            operation = repos.create_operation(
+                ctx.conn,
+                kind="run.job",
+                idempotency_key=f"run-{job_id}-manual-{used + 1}",
+                payload={"job_id": job_id, "attempt_id": attempt["id"]},
+            )
+            repos.set_job_state(ctx.conn, job_id, "queued")
+            repos.audit(ctx.conn, "drm", "job.retry_manual", job_id,
+                        {"attempt": attempt["id"], "operation": operation["id"]})
+            job_doc = repos.job_dict(repos.get_job(ctx.conn, job_id))
+            attempt_doc = repos.attempt_dict(attempt)
+            operation_doc = repos.operation_dict(repos.get_operation(ctx.conn, operation["id"]))
+        executor.submit(operation)
+        return envelope({"job": job_doc, "attempt": attempt_doc, "operation": operation_doc})
+
+    # --- decisions ---------------------------------------------------------------
+
+    @app.get("/decisions/{decision_id}")
+    def get_decision(decision_id: str):
+        with ctx.db_lock:
+            row = repos.get_decision(ctx.conn, decision_id)
+        if row is None:
+            return error_response(ErrorCodes.NOT_FOUND, f"unknown decision {decision_id}", status=404)
+        return envelope({"decision": repos.decision_dict(row)})
 
     # --- providers -----------------------------------------------------------
 
@@ -190,8 +347,9 @@ def register_routes(app: FastAPI, ctx) -> None:
             if existing is not None:
                 repos.supersede_operation_key(ctx.conn, existing["id"])
             op = repos.create_operation(ctx.conn, kind="data.ingest", idempotency_key=key, payload=payload)
+            op_doc = repos.operation_dict(repos.get_operation(ctx.conn, op["id"]))
         executor.submit(op)
-        return envelope({"operation": op})
+        return envelope({"operation": op_doc})
 
     def _ingest_plan_or_error(ctx, row, payload):
         try:

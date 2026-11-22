@@ -158,10 +158,16 @@ _SCHEMA_V2 = """
 ALTER TABLE artifacts ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0;
 """
 
+_SCHEMA_V3 = """
+ALTER TABLE attempts ADD COLUMN error_json TEXT;
+ALTER TABLE attempts ADD COLUMN operation_id TEXT;
+"""
+
 # (version, name, script)
 MIGRATIONS: list[tuple[int, str, str]] = [
     (1, "core tables for the control plane", _SCHEMA_V1),
     (2, "artifact pinning", _SCHEMA_V2),
+    (3, "attempt error and operation linkage", _SCHEMA_V3),
 ]
 
 

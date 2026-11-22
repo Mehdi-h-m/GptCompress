@@ -30,6 +30,9 @@ class DaemonContext:
     db_lock: threading.Lock
     scheduler: Scheduler
     started_at: str
+    runs_dir: Path
+    cancelled: set
+    executor: object = None
 
 
 def create_app(db_path: str | Path | None = None):
@@ -42,7 +45,12 @@ def create_app(db_path: str | Path | None = None):
         db_lock=threading.Lock(),
         scheduler=Scheduler(),
         started_at=utcnow(),
+        runs_dir=resolved_db.parent / "runs",
+        cancelled=set(),
     )
+    from drm.daemon.executor import Executor
+
+    ctx.executor = Executor(ctx)
 
     @contextlib.asynccontextmanager
     async def lifespan(_):

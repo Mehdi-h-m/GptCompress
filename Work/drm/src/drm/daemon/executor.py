@@ -1,9 +1,9 @@
 """Operation executor: background threads carrying operations to terminal state.
 
-Operations are the unit ``drm wait`` blocks on (Sprint 2) and the unit
-startup reconciliation closes out. At-least-once execution with exactly one
-accepted outcome starts here: an interrupted operation is never half-recorded —
-it is either complete with a result manifest or failed with an error record.
+Operations are the unit ``drm wait`` blocks on and the unit startup
+reconciliation closes out. Job runs wrap the attempt runner: failures with
+remaining attempts move the job to ``retry_pending`` and dispatch a fresh
+attempt; cancellation unwinds cooperatively (spec Section 9).
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from drm.catalog.errors import CatalogError
 from drm.contracts import ErrorCodes
 from drm.providers.base import AdapterError
 from drm.store import repos
+from drm.workers.tasks import TaskCancelled
 
 
 def run_ingest(ctx, payload: dict) -> dict:
@@ -32,7 +33,65 @@ def run_ingest(ctx, payload: dict) -> dict:
         })
 
 
-HANDLERS = {"data.ingest": run_ingest}
+def run_job(ctx, payload: dict) -> dict:
+    from drm.workers import runner
+
+    with ctx.db_lock:
+        job = repos.get_job(ctx.conn, payload.get("job_id", ""))
+        attempt = repos.get_attempt(ctx.conn, payload.get("attempt_id", ""))
+    if job is None:
+        raise CatalogError("not_found", f"unknown job {payload.get('job_id')!r}")
+    if attempt is None:
+        raise CatalogError("not_found", f"unknown attempt {payload.get('attempt_id')!r}")
+    spec = json.loads(job["dag_json"] or "{}")
+    try:
+        return runner.execute_local_attempt(ctx, job, attempt, spec)
+    except TaskCancelled:
+        runner.mark_cancelled(ctx, job["id"], attempt["id"])
+        raise
+    except (CatalogError, AdapterError) as exc:
+        code = exc.code if isinstance(exc, CatalogError) else ErrorCodes.ADAPTER_ERROR
+        message = exc.message if isinstance(exc, CatalogError) else str(exc)
+        runner.mark_failed(ctx, job["id"], attempt["id"], code, message)
+        _maybe_autoretry(ctx, job, spec)
+        raise
+    except Exception as exc:
+        # task code can raise anything; the job must still reach a terminal state
+        runner.mark_failed(ctx, job["id"], attempt["id"], ErrorCodes.UNEXPECTED_ERROR, str(exc))
+        _maybe_autoretry(ctx, job, spec)
+        raise
+
+
+def _maybe_autoretry(ctx, job_row, spec: dict) -> None:
+    """Dispatch another attempt when the job has retries left (spec Section 9)."""
+    with ctx.db_lock:
+        fresh = repos.get_job(ctx.conn, job_row["id"])
+        if fresh is None or fresh["state"] != "failed":
+            return
+        used = repos.count_attempts(ctx.conn, job_row["id"])
+        max_attempts = int(spec.get("max_attempts", 3))
+        if used >= max_attempts:
+            return
+        compute_provider = spec.get("compute_provider")
+        attempt = repos.create_attempt(
+            ctx.conn,
+            attempt_id=repos.new_id("att"),
+            job_id=job_row["id"],
+            provider_id=compute_provider,
+        )
+        operation = repos.create_operation(
+            ctx.conn,
+            kind="run.job",
+            idempotency_key=f"run-{job_row['id']}-{used + 1}",
+            payload={"job_id": job_row["id"], "attempt_id": attempt["id"]},
+        )
+        repos.set_job_state(ctx.conn, job_row["id"], "retry_pending")
+        repos.audit(ctx.conn, "daemon", "job.retry_scheduled", job_row["id"],
+                    {"attempt": attempt["id"], "operation": operation["id"], "used": used})
+    ctx.executor.submit(dict(operation))
+
+
+HANDLERS = {"data.ingest": run_ingest, "run.job": run_job}
 
 
 class Executor:
@@ -40,10 +99,12 @@ class Executor:
         self.ctx = ctx
         self.handlers = handlers if handlers is not None else HANDLERS
 
-    def submit(self, op: dict) -> None:
+    def submit(self, op) -> None:
+        op = dict(op)
+        payload_json = op["payload_json"] if "payload_json" in op else json.dumps(op.get("payload", {}))
         thread = threading.Thread(
             target=self._run,
-            args=(op["id"], op["kind"], op["payload_json"]),
+            args=(op["id"], op["kind"], payload_json),
             name=f"drm-op-{op['id']}",
             daemon=True,
         )
@@ -61,6 +122,11 @@ class Executor:
             with ctx.db_lock:
                 repos.set_operation_state(ctx.conn, op_id, "complete", result=result)
                 repos.audit(ctx.conn, "daemon", f"operation.{kind}.complete", op_id, result or {})
+        except TaskCancelled:
+            with ctx.db_lock:
+                repos.set_operation_state(ctx.conn, op_id, "cancelled",
+                                          error={"code": "cancelled", "message": "job cancelled"})
+                repos.audit(ctx.conn, "daemon", "operation.cancelled", op_id, {})
         except CatalogError as exc:
             self._fail(op_id, exc.code, exc.message)
         except AdapterError as exc:

@@ -31,10 +31,18 @@ daemon_app = typer.Typer(no_args_is_help=True, help="Start or stop the local con
 app.add_typer(daemon_app, name="daemon")
 
 from drm.cli.data import data_app  # noqa: E402  (subapps import shared helpers)
+from drm.cli.ops import explain, wait  # noqa: E402
+from drm.cli.plan import plan_app  # noqa: E402
 from drm.cli.providers import providers_app  # noqa: E402
+from drm.cli.runs import jobs_app, runs_app  # noqa: E402
 
 app.add_typer(data_app, name="data")
+app.add_typer(plan_app, name="plan")
 app.add_typer(providers_app, name="providers")
+app.add_typer(runs_app, name="run")
+app.add_typer(jobs_app, name="jobs")
+app.command()(wait)
+app.command()(explain)
 
 
 @app.callback()
