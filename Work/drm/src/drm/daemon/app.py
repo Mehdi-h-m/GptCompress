@@ -1,23 +1,35 @@
 """FastAPI application for the local control daemon (loopback only).
 
 The desktop app and the CLI are clients of this same daemon (spec Sections 1
-and 3). Sprint 0 exposes only health and status; catalog and job endpoints
-arrive with the planner and provider sprints.
+and 3). One process owns the SQLite store and the scheduling loop; startup
+reconciliation closes out anything a previous process left unfinished.
 """
 
 from __future__ import annotations
 
 import contextlib
 import threading
+from dataclasses import dataclass
 from pathlib import Path
 
 import drm
 from drm.config import db_path as default_db_path
 from drm.contracts import envelope
 from drm.daemon.scheduler import Scheduler
+from drm.store import repos
 from drm.store.db import connect, migrate, utcnow
 
 _COUNT_TABLES = ("providers", "artifacts", "artifact_copies", "jobs", "operations")
+
+
+@dataclass
+class DaemonContext:
+    """Everything the routes and executor need, one instance per daemon."""
+
+    conn: object
+    db_lock: threading.Lock
+    scheduler: Scheduler
+    started_at: str
 
 
 def create_app(db_path: str | Path | None = None):
@@ -25,23 +37,28 @@ def create_app(db_path: str | Path | None = None):
     resolved_db = Path(db_path) if db_path else default_db_path()
     conn = connect(resolved_db)
     migrate(conn)
-    db_lock = threading.Lock()  # one connection shared across threads
-    scheduler = Scheduler()
-    started_at = utcnow()
+    ctx = DaemonContext(
+        conn=conn,
+        db_lock=threading.Lock(),
+        scheduler=Scheduler(),
+        started_at=utcnow(),
+    )
 
     @contextlib.asynccontextmanager
     async def lifespan(_):
-        with db_lock:
-            conn.execute(
-                "INSERT INTO audit_log (at, actor, action, subject, details_json)"
-                " VALUES (?, 'daemon', 'started', NULL, '{}')",
-                (utcnow(),),
-            )
-        scheduler.start()
+        with ctx.db_lock:
+            repos.audit(conn, "daemon", "started")
+        from drm.daemon.reconcile import reconcile_on_startup
+
+        reconciliation = reconcile_on_startup(ctx)
+        if reconciliation["released_operations"] or reconciliation["removed_partials"]:
+            with ctx.db_lock:
+                repos.audit(conn, "daemon", "reconciled", details=reconciliation)
+        ctx.scheduler.start()
         try:
             yield
         finally:
-            scheduler.stop()
+            ctx.scheduler.stop()
             conn.close()
 
     from fastapi import FastAPI
@@ -61,7 +78,7 @@ def create_app(db_path: str | Path | None = None):
 
     @app.get("/status")
     def status() -> dict:
-        with db_lock:
+        with ctx.db_lock:
             counts = {
                 table: conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()["n"]
                 for table in _COUNT_TABLES
@@ -71,11 +88,14 @@ def create_app(db_path: str | Path | None = None):
                 "status": "ok",
                 "version": drm.__version__,
                 "db_path": str(resolved_db),
-                "started_at": started_at,
+                "started_at": ctx.started_at,
                 "now": utcnow(),
-                "scheduler": scheduler.snapshot(),
+                "scheduler": ctx.scheduler.snapshot(),
                 "counts": counts,
             }
         )
 
+    from drm.daemon.routes import register_routes
+
+    register_routes(app, ctx)
     return app

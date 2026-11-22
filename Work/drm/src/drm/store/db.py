@@ -154,9 +154,14 @@ CREATE INDEX IF NOT EXISTS idx_attempts_job ON attempts(job_id);
 CREATE INDEX IF NOT EXISTS idx_operations_idempotency ON operations(idempotency_key);
 """
 
+_SCHEMA_V2 = """
+ALTER TABLE artifacts ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0;
+"""
+
 # (version, name, script)
 MIGRATIONS: list[tuple[int, str, str]] = [
     (1, "core tables for the control plane", _SCHEMA_V1),
+    (2, "artifact pinning", _SCHEMA_V2),
 ]
 
 

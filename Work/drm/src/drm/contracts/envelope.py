@@ -22,6 +22,11 @@ class ErrorCodes:
     RECONCILE_REQUIRED = "reconcile_required"
     VALIDATION = "validation"
     NOT_FOUND = "not_found"
+    CONFLICT = "conflict"
+    VERIFY_FAILED = "verify_failed"
+    ADAPTER_ERROR = "adapter_error"
+    TIMEOUT = "timeout"
+    INTERRUPTED = "interrupted"
 
 
 def envelope(payload: dict[str, Any]) -> dict[str, Any]:

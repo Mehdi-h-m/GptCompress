@@ -1,23 +1,26 @@
 """drm command-line interface (spec Section 4).
 
-Sprint 0 covers process control and status; catalog and job verbs arrive
-with their sprints. Every command accepts ``--json`` and fails with a
-stable exit code plus a JSON error record.
+Resource and verb pairs mirror the screens: ``drm providers …`` and
+``drm data …`` (Sprint 1), ``drm plan/run/budget/jobs/wait/explain`` arrive
+with their sprints. Every command accepts ``--json`` before or after the
+verb and fails with a stable exit code plus a JSON error record.
 """
 
 from __future__ import annotations
 
-import urllib.error
-
 import typer
 
 import drm
-from drm.cli.client import get_json
-from drm.cli.exit_codes import ExitCode
-from drm.cli.output import print_error, print_payload
-from drm.config import base_url, db_path, ensure_state_dir, log_file, pid_file, state_dir
+from drm.cli.common import (
+    JSON_OPTION,
+    CliState,
+    fail,
+    request,
+    resolve_state,
+)
+from drm.cli.output import print_payload
+from drm.config import base_url
 from drm.contracts import ErrorCodes
-from drm.daemon import control
 
 app = typer.Typer(
     add_completion=False,
@@ -27,21 +30,11 @@ app = typer.Typer(
 daemon_app = typer.Typer(no_args_is_help=True, help="Start or stop the local control daemon")
 app.add_typer(daemon_app, name="daemon")
 
+from drm.cli.data import data_app  # noqa: E402  (subapps import shared helpers)
+from drm.cli.providers import providers_app  # noqa: E402
 
-class CliState:
-    json_mode: bool = False
-    base: str = ""
-
-
-def _fail(
-    state: CliState,
-    code: str,
-    message: str,
-    exit_code: int = ExitCode.UNEXPECTED_ERROR,
-    **details,
-) -> None:
-    print_error(state.json_mode, code, message, **details)
-    raise typer.Exit(exit_code)
+app.add_typer(data_app, name="data")
+app.add_typer(providers_app, name="providers")
 
 
 @app.callback()
@@ -76,42 +69,18 @@ def _render_status_human(payload: dict) -> str:
     )
 
 
-_JSON_OPTION = typer.Option(False, "--json", help="Emit the versioned JSON envelope")
-
-
 @app.command()
-def version(ctx: typer.Context, json_mode: bool = _JSON_OPTION) -> None:
+def version(ctx: typer.Context, json_mode: bool = JSON_OPTION) -> None:
     """Print the drm client version."""
-    state: CliState = ctx.obj
-    state.json_mode = state.json_mode or json_mode
+    state: CliState = resolve_state(ctx, json_mode)
     print_payload(state.json_mode, {"version": drm.__version__}, human=f"drm {drm.__version__}")
 
 
 @app.command()
-def status(ctx: typer.Context, json_mode: bool = _JSON_OPTION) -> None:
+def status(ctx: typer.Context, json_mode: bool = JSON_OPTION) -> None:
     """Show daemon health, scheduler state and record counts."""
-    state: CliState = ctx.obj
-    state.json_mode = state.json_mode or json_mode
-    try:
-        payload = get_json(f"{state.base}/status")
-    except (urllib.error.URLError, TimeoutError, OSError) as exc:
-        _fail(
-            state,
-            ErrorCodes.DAEMON_UNREACHABLE,
-            f"DRM daemon is not reachable at {state.base}",
-            url=state.base,
-            reason=str(exc),
-        )
-        return
-    except ValueError as exc:
-        _fail(
-            state,
-            ErrorCodes.UNEXPECTED_ERROR,
-            f"daemon at {state.base} returned a non-JSON response",
-            url=state.base,
-            reason=str(exc),
-        )
-        return
+    state: CliState = resolve_state(ctx, json_mode)
+    payload = request(state, "GET", "/status", timeout=5.0)
     payload = dict(payload)
     payload["url"] = state.base
     print_payload(state.json_mode, payload, human=_render_status_human(payload))
@@ -120,14 +89,16 @@ def status(ctx: typer.Context, json_mode: bool = _JSON_OPTION) -> None:
 @daemon_app.command("start")
 def daemon_start(
     ctx: typer.Context,
-    json_mode: bool = _JSON_OPTION,
+    json_mode: bool = JSON_OPTION,
     foreground: bool = typer.Option(
         False, "--foreground", help="Run the daemon in this console instead of detaching"
     ),
 ) -> None:
     """Start the local control daemon (idempotent)."""
-    state: CliState = ctx.obj
-    state.json_mode = state.json_mode or json_mode
+    state: CliState = resolve_state(ctx, json_mode)
+    from drm.config import db_path, ensure_state_dir, log_file, pid_file, state_dir
+    from drm.daemon import control
+
     if control.is_healthy(state.base):
         print_payload(
             state.json_mode,
@@ -150,10 +121,10 @@ def daemon_start(
     try:
         pid = control.start_detached(state_dir(), log_file())
     except OSError as exc:
-        _fail(state, ErrorCodes.UNEXPECTED_ERROR, f"failed to launch daemon process: {exc}")
+        fail(state, ErrorCodes.UNEXPECTED_ERROR, f"failed to launch daemon process: {exc}")
         return
     if not control.wait_healthy(state.base):
-        _fail(
+        fail(
             state,
             ErrorCodes.DAEMON_UNREACHABLE,
             f"daemon did not become healthy within {control.START_TIMEOUT:.0f}s",
@@ -168,14 +139,16 @@ def daemon_start(
 
 
 @daemon_app.command("stop")
-def daemon_stop(ctx: typer.Context, json_mode: bool = _JSON_OPTION) -> None:
+def daemon_stop(ctx: typer.Context, json_mode: bool = JSON_OPTION) -> None:
     """Stop the local control daemon (idempotent)."""
-    state: CliState = ctx.obj
-    state.json_mode = state.json_mode or json_mode
+    state: CliState = resolve_state(ctx, json_mode)
+    from drm.config import pid_file
+    from drm.daemon import control
+
     try:
         result = control.stop(pid_file(), state.base)
     except control.DaemonControlError as exc:
-        _fail(state, ErrorCodes.UNEXPECTED_ERROR, str(exc))
+        fail(state, ErrorCodes.UNEXPECTED_ERROR, str(exc))
         return
     human = (
         f"DRM daemon stopped (pid {result['pid']})"

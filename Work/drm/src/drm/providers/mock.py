@@ -8,14 +8,14 @@ deterministic injection queue rather than a real provider.
 
 from __future__ import annotations
 
-import hashlib
-
-from drm.providers.base import AdapterError, AmbiguousOutcome, ComputeAdapter, StorageAdapter
+from drm.providers.base import (
+    AdapterError,
+    AmbiguousOutcome,
+    ComputeAdapter,
+    StorageAdapter,
+    sha256_hex,
+)
 from drm.store.db import utcnow
-
-
-def sha256_hex(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
 
 
 class FailureInjector:

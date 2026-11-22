@@ -29,6 +29,7 @@ Required behavior (spec Section 5 table):
 from __future__ import annotations
 
 import abc
+import hashlib
 
 
 class AdapterError(Exception):
@@ -37,6 +38,10 @@ class AdapterError(Exception):
 
 class AmbiguousOutcome(AdapterError):
     """The provider may have acted; reconcile provider state before retrying."""
+
+
+def sha256_hex(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 class ComputeAdapter(abc.ABC):

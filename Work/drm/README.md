@@ -20,4 +20,4 @@ Python 3.11+ · PySide6 · FastAPI (loopback only) · Typer · SQLite
 
 ## Status
 
-Design agreed 2026-11-22; Sprint 0 implemented (contracts, SQLite store, loopback daemon, `drm` CLI with 36 passing tests). Sprint 1 — provider registry and artifact catalog — next. Paid cloud launches remain disabled by default; nothing in this folder provisions, uploads, or spends.
+Design agreed 2026-11-22; Sprints 0–1 implemented — contracts, SQLite store, loopback daemon, `drm` CLI, provider registry and artifact catalog with verified ingest/verify/pin/evict (87 passing tests). Sprint 2 — planner preview and local execution — next. Paid cloud launches remain disabled by default; nothing in this folder provisions, uploads, or spends.
