@@ -166,6 +166,17 @@ def daemon_stop(ctx: typer.Context, json_mode: bool = JSON_OPTION) -> None:
     print_payload(state.json_mode, result, human=human)
 
 
+@app.command()
+def ui(ctx: typer.Context) -> None:
+    """Launch the PySide6 desktop shell (a client of the same daemon)."""
+    try:
+        from drm.ui.main import main as ui_main
+    except ImportError:
+        print("the desktop shell needs PySide6: uv pip install --python .venv/Scripts/python.exe -e 'drm[ui]'")
+        raise typer.Exit(1)
+    ui_main()
+
+
 def main() -> None:
     app()
 

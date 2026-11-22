@@ -20,4 +20,4 @@ Python 3.11+ · PySide6 · FastAPI (loopback only) · Typer · SQLite
 
 ## Status
 
-Design agreed 2026-11-22; Sprints 0–2 implemented — contracts, SQLite store, loopback daemon, `drm` CLI, provider registry, artifact catalog, planner preview with recorded decisions, local execution with `drm run submit`/`drm wait`/`drm explain`, cooperative cancel and restart recovery (123 passing tests). Sprint 3 — desktop shell parity — next. Paid cloud launches remain disabled by default; nothing in this folder provisions, uploads, or spends.
+Design agreed 2026-11-22; Sprints 0–3 implemented — Slice 1 (local control plane and catalog) complete: daemon, CLI and the PySide6 desktop shell (Providers, Data catalog, Run monitor; `drm ui`) operate the same loopback API, with planner decisions, local runs, restart recovery and 128 passing tests. Sprint 4 — Hugging Face durable storage — next. Paid cloud launches remain disabled by default; nothing in this folder provisions, uploads, or spends.

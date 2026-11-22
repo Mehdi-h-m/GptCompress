@@ -171,6 +171,12 @@ def register_routes(app: FastAPI, ctx) -> None:
             attempts = [repos.attempt_dict(a) for a in repos.list_attempts(ctx.conn, job_id)]
         return envelope({"job": repos.job_dict(job), "attempts": attempts})
 
+    @app.get("/jobs")
+    def list_jobs():
+        with ctx.db_lock:
+            jobs = [repos.job_dict(row) for row in repos.list_jobs(ctx.conn)]
+        return envelope({"jobs": jobs})
+
     @app.post("/run/{job_id}/cancel")
     def cancel_run(job_id: str, body: dict | None = None):
         with ctx.db_lock:

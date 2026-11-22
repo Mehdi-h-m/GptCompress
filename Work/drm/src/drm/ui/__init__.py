@@ -1,4 +1,3 @@
-"""PySide6 desktop shell.
-
-Implementation starts in Sprint 3 (spec Section 2).
+"""PySide6 desktop shell (Sprint 3): Providers, Data catalog and Run monitor
+screens over the loopback daemon; daemon control and a connection indicator.
 """
