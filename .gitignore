@@ -3,8 +3,10 @@
 .hf-cache/
 .nltk-data/
 .cache/
+.drm/
 __pycache__/
 .pytest_cache/
+*.egg-info/
 *.py[cod]
 .env
 .env.*

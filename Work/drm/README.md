@@ -5,6 +5,7 @@ Desktop application that plans, places and recovers GptCompress experiments acro
 ## Documentation
 
 - Design specification: [docs/ORCHESTRATOR_ARCHITECTURE.md](docs/ORCHESTRATOR_ARCHITECTURE.md)
+- Sprint roadmap: [docs/DELIVERY_PLAN.md](docs/DELIVERY_PLAN.md)
 - Data and corpus rules it depends on: [../docs/DATA_ARCHITECTURE.md](../docs/DATA_ARCHITECTURE.md)
 
 ## Interfaces
@@ -19,4 +20,4 @@ Python 3.11+ · PySide6 · FastAPI (loopback only) · Typer · SQLite
 
 ## Status
 
-Design agreed 2026-11-22; no implementation yet. First delivery slice: local control plane and catalog with CLI parity (spec Section 10). Paid cloud launches remain disabled by default; nothing in this folder provisions, uploads, or spends.
+Design agreed 2026-11-22; Sprint 0 implemented (contracts, SQLite store, loopback daemon, `drm` CLI with 36 passing tests). Sprint 1 — provider registry and artifact catalog — next. Paid cloud launches remain disabled by default; nothing in this folder provisions, uploads, or spends.
