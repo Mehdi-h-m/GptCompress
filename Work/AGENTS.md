@@ -10,6 +10,13 @@
 - Workers must preserve unrelated user changes and avoid editing files owned by another active worker. Report conflicts to the master.
 - Routine, reversible work inside an assignment does not require repeated user confirmation. Surface material changes to research scope or assumptions to the master.
 
+## Workspace layout
+
+- `gptcompress/` — the compression method: source in `gptcompress/src/gptcompress/` (including the `gptcompress.inspector` package), tests, configs, reports, experiments, datasets, and models.
+- `inspector/` — the VIS-001 desktop model inspector deliverable: tests, reports, inspection recordings, and dist builds.
+- `drm/` — the Distributed Resource Manager orchestrator app; design in `drm/docs/ORCHESTRATOR_ARCHITECTURE.md`.
+- `docs/` — cross-project architecture documents. `reports/` — generated dashboard only. Dot-prefixed directories are local runtime state and are not versioned.
+
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 

@@ -1,0 +1,36 @@
+INFO:gptcompress:Run 20261121T052200Z-3ea9f8c5
+INFO:gptcompress:Loading BF16 checkpoint on CPU
+INFO:gptcompress:Enabled 64 MiB FP32 weight tiles for 253 BF16 projections
+WARNING:lm_eval.models.huggingface:`pretrained` model kwarg is not of type `str`. Many other model arguments may be ignored. Please do not launch via accelerate or use `parallelize=True` if passing an existing model this way.
+WARNING:lm_eval.models.huggingface:Passed an already-initialized model through `pretrained`, assuming single-process call to evaluate() or custom distributed integration
+INFO:gptcompress:Model load complete in 0.43 seconds
+INFO:lm_eval.evaluator:Setting random seed to 42 | Setting numpy seed to 42 | Setting torch manual seed to 42 | Setting fewshot manual seed to 42
+INFO:lm_eval.evaluator:Using pre-initialized model
+INFO:lm_eval.evaluator:Using cache at C:\Users\djame\Downloads\GptCompress\Work\experiments\20261121T052200Z-3ea9f8c5\gsm8k_rank0.db
+INFO:lm_eval.evaluator_utils:Selected tasks:
+INFO:lm_eval.evaluator_utils:Task: gsm8k (N/A)
+INFO:lm_eval.evaluator:gsm8k: Using gen_kwargs: {'until': ['Question:', '</s>', '<|im_end|>'], 'do_sample': False, 'temperature': 0.0, 'max_gen_toks': 192}
+INFO:lm_eval.evaluator:Evaluating examples for tasks ['gsm8k']
+INFO:lm_eval.api.task:Building contexts for gsm8k on rank 0...
+INFO:lm_eval.api.task:gsm8k: Evaluating on 10 examples
+INFO:lm_eval.evaluator:Running generate_until requests
+INFO:lm_eval.api.model:Loading 'generate_until' responses from cache 'C:\Users\djame\Downloads\GptCompress\Work\experiments\20261121T052200Z-3ea9f8c5\gsm8k_rank0.db' where possible...
+INFO:lm_eval.api.model:Cached requests: 0, Requests remaining: 10
+INFO:lm_eval.api.task:gsm8k: Evaluating on 10 examples
+INFO:lm_eval.api.task:gsm8k: Evaluating on 10 examples
+INFO:gptcompress:gsm8k {'status': 'complete', 'n': 10, 'metric': 'exact_match,flexible-extract', 'score': np.float64(0.8), 'stderr': 0.13333333333333333, 'all_metrics': {'name': 'gsm8k', 'alias': 'gsm8k', 'sample_len': 10, 'exact_match,strict-match': np.float64(0.7), 'exact_match_stderr,strict-match': 0.15275252316519466, 'exact_match,flexible-extract': np.float64(0.8), 'exact_match_stderr,flexible-extract': 0.13333333333333333}, 'elapsed_seconds': 4839.4725698}
+INFO:lm_eval.evaluator:Setting random seed to 42 | Setting numpy seed to 42 | Setting torch manual seed to 42 | Setting fewshot manual seed to 42
+INFO:lm_eval.evaluator:Using pre-initialized model
+INFO:lm_eval.evaluator:Using cache at C:\Users\djame\Downloads\GptCompress\Work\experiments\20261121T052200Z-3ea9f8c5\ifeval_rank0.db
+INFO:lm_eval.evaluator_utils:Selected tasks:
+INFO:lm_eval.evaluator_utils:Task: ifeval (N/A)
+INFO:lm_eval.evaluator:ifeval: Using gen_kwargs: {'until': [], 'do_sample': False, 'temperature': 0.0, 'max_gen_toks': 256}
+INFO:lm_eval.evaluator:Evaluating examples for tasks ['ifeval']
+INFO:lm_eval.api.task:Building contexts for ifeval on rank 0...
+INFO:lm_eval.api.task:ifeval: Evaluating on 10 examples
+INFO:lm_eval.evaluator:Running generate_until requests
+INFO:lm_eval.api.model:Loading 'generate_until' responses from cache 'C:\Users\djame\Downloads\GptCompress\Work\experiments\20261121T052200Z-3ea9f8c5\ifeval_rank0.db' where possible...
+INFO:lm_eval.api.model:Cached requests: 0, Requests remaining: 10
+INFO:lm_eval.api.task:ifeval: Evaluating on 10 examples
+INFO:gptcompress:ifeval {'status': 'complete', 'n': 10, 'metric': 'prompt_level_strict_acc,none', 'score': 0.6, 'stderr': 0.16329931618554522, 'all_metrics': {'name': 'ifeval', 'alias': 'ifeval', 'sample_len': 10, 'prompt_level_strict_acc,none': 0.6, 'prompt_level_strict_acc_stderr,none': 0.16329931618554522, 'inst_level_strict_acc,none': 0.7142857142857143, 'inst_level_strict_acc_stderr,none': 'N/A', 'prompt_level_loose_acc,none': 0.7, 'prompt_level_loose_acc_stderr,none': 0.15275252316519466, 'inst_level_loose_acc,none': 0.7857142857142857, 'inst_level_loose_acc_stderr,none': 'N/A'}, 'elapsed_seconds': 5653.3556228}
+INFO:gptcompress:Report C:\Users\djame\Downloads\GptCompress\Work\reports\index.html

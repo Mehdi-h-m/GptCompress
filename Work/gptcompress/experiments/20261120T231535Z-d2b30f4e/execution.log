@@ -1,0 +1,18 @@
+INFO:gptcompress:Run 20261120T231535Z-d2b30f4e
+INFO:gptcompress:Loading BF16 checkpoint on CPU
+INFO:gptcompress:Enabled 64 MiB FP32 weight tiles for 253 BF16 projections
+WARNING:lm_eval.models.huggingface:`pretrained` model kwarg is not of type `str`. Many other model arguments may be ignored. Please do not launch via accelerate or use `parallelize=True` if passing an existing model this way.
+WARNING:lm_eval.models.huggingface:Passed an already-initialized model through `pretrained`, assuming single-process call to evaluate() or custom distributed integration
+INFO:gptcompress:Model load complete in 0.78 seconds
+INFO:lm_eval.evaluator:Setting random seed to 42 | Setting numpy seed to 42 | Setting torch manual seed to 42 | Setting fewshot manual seed to 42
+INFO:lm_eval.evaluator:Using pre-initialized model
+INFO:lm_eval.evaluator:Using cache at C:\Users\djame\Downloads\GptCompress\Work\experiments\20261120T231535Z-d2b30f4e\gsm8k_rank0.db
+INFO:lm_eval.evaluator_utils:Selected tasks:
+INFO:lm_eval.evaluator_utils:Task: gsm8k (N/A)
+INFO:lm_eval.evaluator:gsm8k: Using gen_kwargs: {'until': ['Question:', '</s>', '<|im_end|>'], 'do_sample': False, 'temperature': 0.0, 'max_gen_toks': 192}
+INFO:lm_eval.evaluator:Evaluating examples for tasks ['gsm8k']
+INFO:lm_eval.api.task:Building contexts for gsm8k on rank 0...
+INFO:lm_eval.api.task:gsm8k: Evaluating on 10 examples
+INFO:lm_eval.evaluator:Running generate_until requests
+INFO:lm_eval.api.model:Loading 'generate_until' responses from cache 'C:\Users\djame\Downloads\GptCompress\Work\experiments\20261120T231535Z-d2b30f4e\gsm8k_rank0.db' where possible...
+INFO:lm_eval.api.model:Cached requests: 0, Requests remaining: 10

@@ -1,0 +1,15 @@
+{
+  "status": "failed",
+  "tasks": {
+    "gsm8k": {
+      "status": "pending",
+      "n": 0
+    },
+    "ifeval": {
+      "status": "pending",
+      "n": 0
+    }
+  },
+  "model_load_seconds": 0.7758422999977483,
+  "error": "Worker stopped concurrent batch-10 evaluation at 97.8% host RAM usage; no task completed. Retry sequentially with a smaller matched batch."
+}

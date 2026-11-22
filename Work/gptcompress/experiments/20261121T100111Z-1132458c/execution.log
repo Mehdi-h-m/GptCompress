@@ -1,0 +1,10 @@
+INFO:gptcompress:Run 20261121T100111Z-1132458c
+INFO:gptcompress:Loading BF16 checkpoint on CPU
+WARNING:accelerate.big_modeling:Some parameters are on the meta device because they were offloaded to the cpu.
+INFO:gptcompress:Placed 1897 MiB of BF16 weights on CUDA
+INFO:gptcompress:Enabled 64 MiB FP32 weight tiles for 210 BF16 projections
+WARNING:lm_eval.models.huggingface:`pretrained` model kwarg is not of type `str`. Many other model arguments may be ignored. Please do not launch via accelerate or use `parallelize=True` if passing an existing model this way.
+WARNING:lm_eval.models.huggingface:Passed an already-initialized model through `pretrained`, assuming single-process call to evaluate() or custom distributed integration
+INFO:gptcompress:Model load complete in 6.36 seconds
+INFO:gptcompress:Smoke result {'prompt': '<|im_start|>user\nAnswer in one word. What color is a clear daytime sky?<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n', 'response': 'Blue.', 'tokens': 3, 'seconds': 33.068510799999785}
+INFO:gptcompress:Report C:\Users\djame\Downloads\GptCompress\Work\reports\index.html

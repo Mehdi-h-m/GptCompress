@@ -1,0 +1,40 @@
+{
+  "schema": 2,
+  "id": "20261121T112601Z-e888821e",
+  "created": "2026-11-21T11:26:01.958120+00:00",
+  "a": "29ea8e8f1044a0e6",
+  "b": "a67d22094368e8bf",
+  "prompt": "The capital of France is",
+  "positions": [
+    4,
+    5
+  ],
+  "versions": [],
+  "comparisons": [],
+  "local_comparisons": [],
+  "status": "failed",
+  "settings": {
+    "max_tokens": 16,
+    "decode_tokens": 1,
+    "prompt_truncated": false,
+    "raw": false,
+    "tokenizer_identity": "474bd5fbea005a66ce82b9342f39bd68c3e202c7c9352cc20df84b8fac3c7565",
+    "arithmetic": "CPU BF16 weights, tiled FP32 linear accumulation, BF16 projection output",
+    "threads": 4,
+    "seed": 42,
+    "tokenization": "Plain prompt without chat template",
+    "packages": {
+      "torch": "2.14.1+cu126",
+      "transformers": "5.23.0",
+      "safetensors": "0.8.0"
+    },
+    "continuation": "Greedy Version A continuation replayed as fixed input for Version B",
+    "rss_sampling_ms": 100
+  },
+  "notes": [
+    "Runtime includes capture work. Process RSS is sampled every 100 ms and can miss transient peaks.",
+    "Activation differences are diagnostic evidence. They do not establish cause.",
+    "Zero reference norm gives unavailable relative error except for equal zero-valued arrays."
+  ],
+  "error": "Using a `device_map`, `tp_plan`, `torch.device` context manager or setting `torch.set_default_device(device)` requires `accelerate`. You can install it with `pip install accelerate`"
+}

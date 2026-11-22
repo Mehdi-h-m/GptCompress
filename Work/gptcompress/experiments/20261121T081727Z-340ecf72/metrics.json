@@ -1,0 +1,50 @@
+{
+  "status": "complete",
+  "tasks": {
+    "gsm8k": {
+      "status": "complete",
+      "n": 10,
+      "metric": "exact_match,flexible-extract",
+      "score": 0.0,
+      "stderr": 0.0,
+      "all_metrics": {
+        "name": "gsm8k",
+        "alias": "gsm8k",
+        "sample_len": 10,
+        "exact_match,strict-match": 0.0,
+        "exact_match_stderr,strict-match": 0.0,
+        "exact_match,flexible-extract": 0.0,
+        "exact_match_stderr,flexible-extract": 0.0
+      },
+      "elapsed_seconds": 2823.4372258000003
+    },
+    "ifeval": {
+      "status": "complete",
+      "n": 10,
+      "metric": "prompt_level_strict_acc,none",
+      "score": 0.1,
+      "stderr": 0.09999999999999999,
+      "all_metrics": {
+        "name": "ifeval",
+        "alias": "ifeval",
+        "sample_len": 10,
+        "prompt_level_strict_acc,none": 0.1,
+        "prompt_level_strict_acc_stderr,none": 0.09999999999999999,
+        "inst_level_strict_acc,none": 0.14285714285714285,
+        "inst_level_strict_acc_stderr,none": "N/A",
+        "prompt_level_loose_acc,none": 0.1,
+        "prompt_level_loose_acc_stderr,none": 0.09999999999999999,
+        "inst_level_loose_acc,none": 0.14285714285714285,
+        "inst_level_loose_acc_stderr,none": "N/A"
+      },
+      "elapsed_seconds": 3219.458851899999
+    }
+  },
+  "model_load_seconds": 92.4280523999987,
+  "resources": {
+    "peak_rss_bytes": 5457739776,
+    "peak_vram_bytes": null,
+    "elapsed_seconds": 6135.3530378,
+    "method": "Windows process peak working set, elapsed wall time; CPU-only inference"
+  }
+}

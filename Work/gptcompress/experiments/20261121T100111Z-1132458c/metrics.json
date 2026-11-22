@@ -1,0 +1,17 @@
+{
+  "status": "complete",
+  "tasks": {},
+  "model_load_seconds": 6.361927099998866,
+  "smoke": {
+    "prompt": "<|im_start|>user\nAnswer in one word. What color is a clear daytime sky?<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "response": "Blue.",
+    "tokens": 3,
+    "seconds": 33.068510799999785
+  },
+  "resources": {
+    "peak_rss_bytes": 7845023744,
+    "peak_vram_bytes": 2023751680,
+    "elapsed_seconds": 39.55857109999852,
+    "method": "Windows process peak working set, elapsed wall time, peak CUDA memory reserved by PyTorch"
+  }
+}

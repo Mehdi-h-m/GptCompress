@@ -11,12 +11,12 @@ __pycache__/
 !.env.example
 
 # Downloaded assets are reproduced from tracked manifests
-/Work/models/**/*
-!/Work/models/**/
-!/Work/models/**/manifest.json
-/Work/datasets/**/*
-!/Work/datasets/**/
-!/Work/datasets/**/manifest.json
+/Work/gptcompress/models/**/*
+!/Work/gptcompress/models/**/
+!/Work/gptcompress/models/**/manifest.json
+/Work/gptcompress/datasets/**/*
+!/Work/gptcompress/datasets/**/
+!/Work/gptcompress/datasets/**/manifest.json
 
 # Local model weights and evaluation caches
 *.safetensors
@@ -24,3 +24,6 @@ __pycache__/
 *.db
 *.db-shm
 *.db-wal
+
+# Built desktop inspector binaries
+/Work/inspector/dist/

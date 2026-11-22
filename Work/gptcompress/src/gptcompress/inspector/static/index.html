@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>GptCompress · Model inspector</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header><a class="brand" href="/">GptCompress <span>MODEL INSPECTOR</span></a><span class="local">Local workspace</span></header>
+<main>
+<section class="versionbar"><label>Version A<select id="version-a"></select></label><button id="swap" aria-label="Swap versions" title="Swap versions">⇄</button><label>Version B<select id="version-b"></select></label><button id="add-version">Add local version</button></section>
+<div id="error" role="alert" hidden></div>
+<section id="overview" class="overview"></section><details class="benchmark-section"><summary>Benchmark history for selected versions</summary><div id="benchmark-deltas"></div><div id="benchmarks" class="overview"></div></details>
+<nav><button class="active" data-tab="architecture">Architecture</button><button data-tab="recording">Activation recording</button><button data-tab="comparison">Comparison</button><button data-tab="jobs">Jobs <span id="job-count"></span></button></nav>
+<section id="architecture" class="tab active">
+<div class="split"><aside class="panel"><div class="panelhead"><h2>Module hierarchy</h2><select id="inspect-side"><option value="a">Version A</option><option value="b">Version B</option></select></div><input id="module-search" placeholder="Find a block or projection" aria-label="Search modules"><div id="module-tree" class="tree"></div></aside>
+<div class="panel inspector"><div class="panelhead"><div><div id="breadcrumbs" class="muted"></div><h2 id="module-title">Architecture explorer</h2></div><div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-reset" aria-label="Reset zoom">100%</button><button id="zoom-in" aria-label="Zoom in">+</button></div></div><p id="graph-caption" class="muted">Expand a transformer block or choose a weight to inspect.</p><div id="graph-viewport"><div id="graph-scale"><div id="module-graph"></div></div></div><div id="module-detail"></div><div id="matrix-result" hidden></div></div></div>
+</section>
+<section id="recording" class="tab">
+  <div class="split recording-layout">
+    <section class="panel">
+      <h2>Record activations</h2>
+      <p class="muted">Version A generates the optional continuation. Version B replays the same tokens.</p>
+      <form id="record-form">
+        <label>Prompt<textarea id="prompt" rows="4" required>The capital of France is</textarea></label>
+        <div class="formrow">
+          <label>Prompt token cap<input id="max-tokens" type="number" min="1" max="128" value="16" required></label>
+          <label>Decode tokens<input id="decode-tokens" type="number" min="0" max="8" value="0" required></label>
+          <label>Token positions<input id="positions" placeholder="0, 1, 2"></label>
+        </div>
+        <label>Capture modules<textarea id="capture-modules" rows="4" placeholder="One module per line. Leave blank for early, middle and final blocks."></textarea></label>
+        <button type="button" id="all-blocks">Select all transformer blocks</button>
+        <label class="check"><input id="single-version" type="checkbox">Record Version A only</label>
+        <label class="check"><input id="raw" type="checkbox">Save the first 128 features of each selected input and output</label>
+        <label class="check"><input id="verify-parity" type="checkbox">Verify capture parity with an extra forward pass</label>
+        <button class="primary" type="submit">Start recording</button>
+      </form>
+    </section>
+    <section class="panel"><h2>Saved recordings</h2><div id="recordings"></div></section>
+  </div>
+</section>
+<section id="comparison" class="tab"><section class="panel"><div class="panelhead"><h2>Recorded comparison</h2><select id="recording-select" aria-label="Choose recording"><option value="">Choose a recording</option></select></div><div id="comparison-result" class="empty">Record the selected versions or open a saved recording to inspect their differences.</div></section></section>
+<section id="jobs" class="tab"><section class="panel"><h2>Background jobs</h2><div id="jobs-list"></div></section></section>
+</main>
+<dialog id="version-dialog"><form id="version-form"><h2>Add a model version</h2><label>Display name<input id="new-name" required></label><label>Local checkpoint directory<input id="new-path" required placeholder="C:\…\checkpoint"></label><div class="actions"><button type="button" id="close-dialog">Cancel</button><button class="primary">Add version</button></div></form></dialog>
+<script src="/app.js"></script>
+</body></html>
